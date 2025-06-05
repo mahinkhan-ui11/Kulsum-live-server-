@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>2025 Calendar</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      text-align: center;
+    }
+
+    #calendar-container {
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+    }
+
+    .month {
+      border-radius: 8px;
+    }
+
+    .month h3 {
+      margin-bottom: 10px;
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 50px);
+      gap: 5px;
+      justify-content: center;
+    }
+
+    .day, .date {
+      width: 50px;
+      height: 50px;
+      line-height: 50px;
+      box-sizing: border-box;
+      font-size: 14px;
+    }
+
+    .day {
+      font-weight: bold;
+      color: #333;
+    }
+
+    .date {
+      cursor: pointer;
+      position: relative;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    .date.selected::before {
+      content: '';
+      position: absolute;
+      top: 5px;
+      left: 5px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #007bff;
+      z-index: 0;
+    }
+
+    .date span {
+      position: relative;
+      z-index: 1;
+    }
+
+    .price-display {
+      margin-top: 20px;
+      font-size: 18px;
+      color: black;
+      font-weight: bold;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div id="calendar-container"></div>
+
+  <script>
+    const calendarContainer = document.getElementById("calendar-container");
+    const prices = [40, 45, 50, 55, 60];
+    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+    function generateCalendar(year) {
+      for (let month = 0; month < 12; month++) {
+        const monthDiv = document.createElement("div");
+        monthDiv.className = "month";
+
+        const date = new Date(year, month);
+        const monthName = date.toLocaleString("default", { month: "long" });
+
+        const title = document.createElement("h3");
+        title.textContent = `${monthName} ${year}`;
+        monthDiv.appendChild(title);
+
+        const grid = document.createElement("div");
+        grid.className = "calendar-grid";
+
+        // Add weekday names
+        for (let d of days) {
+          const day = document.createElement("div");
+          day.className = "day";
+          day.textContent = d;
+          grid.appendChild(day);
+        }
+
+        // Add empty slots before the first day
+        const firstDay = new Date(year, month, 1).getDay();
+        for (let i = 0; i < firstDay; i++) {
+          const empty = document.createElement("div");
+          grid.appendChild(empty);
+        }
+
+        // Add date boxes
+        const totalDays = new Date(year, month + 1, 0).getDate();
+        for (let day = 1; day <= totalDays; day++) {
+          const dateBox = document.createElement("div");
+          dateBox.className = "date";
+
+          const randomPrice = prices[Math.floor(Math.random() * prices.length)];
+          dateBox.dataset.price = `$${randomPrice}`;
+
+          const span = document.createElement("span");
+          span.textContent = day;
+          dateBox.appendChild(span);
+
+          dateBox.addEventListener("click", () => {
+            monthDiv.querySelectorAll(".date").forEach(d => d.classList.remove("selected"));
+            dateBox.classList.add("selected");
+            priceDisplay.textContent = `Selected Date: ${monthName} ${day}, ${year} - ${dateBox.dataset.price}`;
+          });
+
+          grid.appendChild(dateBox);
+        }
+
+        monthDiv.appendChild(grid);
+
+        // Add local price display below each month
+        const priceDisplay = document.createElement("div");
+        priceDisplay.className = "price-display";
+        monthDiv.appendChild(priceDisplay);
+
+        calendarContainer.appendChild(monthDiv);
+      }
+    }
+
+    generateCalendar(2025);
+  </script>
+</body>
+</html>
