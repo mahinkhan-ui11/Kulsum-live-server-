@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>2025 Calendar</title>
+  <title>Calendar with Post-Click Disable</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -35,9 +35,9 @@
     .day, .date {
       width: 50px;
       height: 50px;
-      line-height: 50px;
+      line-height: 1.2;
       box-sizing: border-box;
-      font-size: 14px;
+      font-size: 12px;
     }
 
     .day {
@@ -50,6 +50,20 @@
       position: relative;
       border: 1px solid #ccc;
       border-radius: 8px;
+      background-color: #e9f2ff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .date span {
+      position: relative;
+      z-index: 1;
+    }
+
+    .date .price {
+      font-size: 10px;
+      color: #007bff;
     }
 
     .date.selected::before {
@@ -64,9 +78,11 @@
       z-index: 0;
     }
 
-    .date span {
-      position: relative;
-      z-index: 1;
+    .date.disabled {
+      background-color: #eee;
+      color: #999;
+      text-decoration: line-through;
+      pointer-events: none;
     }
 
     .price-display {
@@ -101,7 +117,6 @@
         const grid = document.createElement("div");
         grid.className = "calendar-grid";
 
-        // Add weekday names
         for (let d of days) {
           const day = document.createElement("div");
           day.className = "day";
@@ -109,42 +124,58 @@
           grid.appendChild(day);
         }
 
-        // Add empty slots before the first day
         const firstDay = new Date(year, month, 1).getDay();
         for (let i = 0; i < firstDay; i++) {
-          const empty = document.createElement("div");
-          grid.appendChild(empty);
+          grid.appendChild(document.createElement("div"));
         }
 
-        // Add date boxes
         const totalDays = new Date(year, month + 1, 0).getDate();
+        const dateBoxes = [];
+
         for (let day = 1; day <= totalDays; day++) {
           const dateBox = document.createElement("div");
           dateBox.className = "date";
 
-          const randomPrice = prices[Math.floor(Math.random() * prices.length)];
-          dateBox.dataset.price = `$${randomPrice}`;
-
           const span = document.createElement("span");
           span.textContent = day;
+
+          const priceTag = document.createElement("div");
+          priceTag.className = "price";
+          const randomPrice = prices[Math.floor(Math.random() * prices.length)];
+          priceTag.textContent = `$${randomPrice}`;
+
           dateBox.appendChild(span);
+          dateBox.appendChild(priceTag);
 
-          dateBox.addEventListener("click", () => {
-            monthDiv.querySelectorAll(".date").forEach(d => d.classList.remove("selected"));
-            dateBox.classList.add("selected");
-            priceDisplay.textContent = `Selected Date: ${monthName} ${day}, ${year} - ${dateBox.dataset.price}`;
-          });
-
+          dateBox.dataset.day = day;
+          dateBoxes.push(dateBox);
           grid.appendChild(dateBox);
         }
 
+        // Click Event Logic
+        dateBoxes.forEach((box, index) => {
+          box.addEventListener("click", () => {
+            // Clear previous selection
+            dateBoxes.forEach(d => {
+              d.classList.remove("selected", "disabled-after");
+              if (d.classList.contains("auto-disabled")) {
+                d.classList.remove("disabled");
+              }
+            });
+
+            box.classList.add("selected");
+
+            // Disable next 4 days
+            for (let i = 1; i <= 4; i++) {
+              const nextBox = dateBoxes[index + i];
+              if (nextBox) {
+                nextBox.classList.add("disabled", "auto-disabled");
+              }
+            }
+          });
+        });
+
         monthDiv.appendChild(grid);
-
-        // Add local price display below each month
-        const priceDisplay = document.createElement("div");
-        priceDisplay.className = "price-display";
-        monthDiv.appendChild(priceDisplay);
-
         calendarContainer.appendChild(monthDiv);
       }
     }
@@ -153,3 +184,4 @@
   </script>
 </body>
 </html>
+
